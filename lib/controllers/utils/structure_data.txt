@@ -1,0 +1,50 @@
+Colección: users
+Campos:
+- uid (string): ID único del usuario.
+- name (string): Nombre del usuario.
+- email (string): Correo electrónico del usuario.
+- profileImageUrl (string): URL de la imagen de perfil.
+- createdAt (timestamp): Fecha de creación del perfil.
+- consentimientoDatos (boolean): Consentimiento para uso de datos estadísticos.
+
+Colección: posts
+Campos:
+- postId (string): ID único del post.
+- userId (string): UID del autor del post.
+- description (string): Descripción del lugar/situación.
+- imageUrl (string): URL de la imagen.
+- location (map):
+  - latitude (double)
+  - longitude (double)
+- severity (string): Nivel de gravedad (red, yellow, green).
+- comments (array of objects):
+  - userId (string)
+  - userName (string)
+  - commentText (string)
+  - timestamp (timestamp)
+- createdAt (timestamp): Fecha de creación del post.
+
+Colección: mapMarkers
+Campos:
+- markerId (string): ID único del marcador.
+- postId (string): ID del post asociado.
+- userId (string): UID del autor del post.
+- description (string): Descripción breve del lugar.
+- severity (string): Nivel de gravedad (red, yellow, green).
+- location (map):
+  - latitude (double)
+  - longitude (double)
+- createdAt (timestamp): Fecha de creación del marcador.
+
+Colección: settings
+Campos:
+- severityColors (map):
+  - red (string): Código hexadecimal del color rojo.
+  - yellow (string): Código hexadecimal del color amarillo.
+  - green (string): Código hexadecimal del color verde.
+
+Colección: loginLogs
+Campos:
+- logId (string): ID único del registro.
+- userId (string): UID del usuario que inició sesión.
+- loginAt (timestamp): Fecha y hora del inicio de sesión.

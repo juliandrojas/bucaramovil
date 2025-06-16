@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "787613576803",
+    "project_id": "bucaramovil-86d49",
+    "storage_bucket": "bucaramovil-86d49.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:787613576803:android:2e4e3c988fb0f209c49256",
+        "android_client_info": {
+          "package_name": "com.example.bucaramovil"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "787613576803-u5fp1llf73to86c774ftk1oi9k0t8c5b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bucaramovil",
+            "certificate_hash": "42e652040585273b05f1ca5ccb1b48c38655a824"
+          }
+        },
+        {
+          "client_id": "787613576803-51f7om3ttjgvat54ktpeoighps1t3v7u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6LIX4U7iBxHLIuAeIHNV284N-Pkf7K6c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "787613576803-51f7om3ttjgvat54ktpeoighps1t3v7u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

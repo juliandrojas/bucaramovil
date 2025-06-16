@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "784106304201",
+    "project_id": "bucaramovil-5bd04",
+    "storage_bucket": "bucaramovil-5bd04.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:784106304201:android:4fa4dbd6cc5aa504b35318",
+        "android_client_info": {
+          "package_name": "com.example.bucaramovil"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNlHO00vPsp7OWQ8BzP1wN0Oi2UBE8Mxs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
