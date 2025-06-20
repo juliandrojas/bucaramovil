@@ -1,3 +1,4 @@
+import 'package:bucaramovil/screens/posts/user/user_posts.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -5,9 +6,11 @@ import 'environment.dart';
 // import 'package:flutter_dotenv/flutter_dotenv.dart';
 // Importa los archivos de rutas de ambos entornos
 // Importa los logins y homes de ambos entornos
-import 'screens/login.dart' as dev_login;
-import 'screens/home.dart' as dev_home;
-import 'screens/posts/comments.dart' as dev_comments;
+import 'screens/login.dart';
+import 'screens/home.dart';
+import 'screens/posts/comments/comments.dart';
+import 'screens/posts/create_posts.dart';
+import 'screens/posts/comments/create_comments.dart'; // Importa CreateCommentPage
 /*import 'screens/test/login.dart' as test_login;
 import 'screens/test/home.dart' as test_home;*/
 
@@ -34,11 +37,35 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(primarySwatch: Colors.blue),
       initialRoute: initialRoute,
       routes: {
-        '/login': (context) => const dev_login.LoginPageDev(),
-        '/home': (context) => const dev_home.HomePageDev(),
-        '/comments': (context) => dev_comments.CommentsPage(
-          postId: ModalRoute.of(context)?.settings.arguments as String,
-        ),
+        '/login': (context) => const LoginPageDev(),
+        '/home': (context) => const StartPage(),
+        '/create_post': (context) => const CreatePostPage(),
+        '/user_posts': (context) {
+          final args =
+              ModalRoute.of(context)?.settings.arguments as Map<String, String>;
+          return UserPostsPage(
+            userId: args['userId']!,
+            userName: args['userName']!,
+          );
+        },
+        '/comments': (context) {
+          // Extraer el postId del mapa de argumentos
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>;
+          final postID = args['postId'] as String;
+
+          return CommentsPage(postId: postID);
+        },
+        '/create_comment': (context) {
+          // Extraer el postId del mapa de argumentos
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>;
+          final postID = args['postId'] as String;
+
+          return CreateCommentPage(postId: postID);
+        },
       },
     );
   }

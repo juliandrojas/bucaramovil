@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 
 // Instancia de Firestore
 FirebaseFirestore db = FirebaseFirestore.instance;
+final CollectionReference posts = FirebaseFirestore.instance.collection(
+  'posts',
+);
 
 Future<void> createPost(
   String author,
@@ -25,11 +28,13 @@ Future<void> createPost(
       'description': description,
       'location': {'latitude': latitude, 'longitude': longitude},
       'severity': severity,
-      'comments': [], // Inicialmente sin comentarios
+      'comments': [],
       'createdAt': FieldValue.serverTimestamp(),
     });
+
+    debugPrint("Publicación creada exitosamente");
   } catch (e) {
-    print("Error al crear el post: $e");
+    debugPrint("Error al crear el post: $e");
     rethrow;
   }
 }
@@ -37,27 +42,18 @@ Future<void> createPost(
 Future<List<Map<String, dynamic>>> getPosts() async {
   List<Map<String, dynamic>> posts = [];
   try {
-    CollectionReference collection = FirebaseFirestore.instance.collection(
-      'posts',
-    );
-    QuerySnapshot queryPost = await collection.get();
+    QuerySnapshot queryPost = await FirebaseFirestore.instance
+        .collection('posts')
+        .get();
 
-    queryPost.docs.forEach((document) {
+    for (var document in queryPost.docs) {
       final data = document.data() as Map<String, dynamic>;
-      // Añadimos el ID del documento al mapa
-      posts.add({
-        ...data,
-        'uid': document.id, // <-- Aquí añadimos el ID del post
-      });
-    });
+      posts.add({...data, 'uid': document.id});
+    }
   } catch (e) {
-    debugPrint("Error al obtener la colección: $e");
+    debugPrint("Error al obtener los posts: $e");
   }
   return posts;
-}
-
-Future<void> deletePost(String uid) async {
-  await db.collection('people').doc(uid).delete();
 }
 
 Future<List<String>> getPostComments(String postId) async {
@@ -78,4 +74,62 @@ Future<List<String>> getPostComments(String postId) async {
     debugPrint("Error al obtener los comentarios: $e");
     return [];
   }
+}
+
+/// Añade un comentario al post especificado
+Future<void> addCommentToPost(String postId, String comment) async {
+  try {
+    await FirebaseFirestore.instance.collection('posts').doc(postId).update({
+      'comments': FieldValue.arrayUnion([comment]),
+    });
+  } catch (e) {
+    throw Exception("Error al guardar el comentario: $e");
+  }
+}
+
+Future<void> updateComment(
+  String postId,
+  int commentIndex,
+  String newComment,
+) async {
+  DocumentReference postRef = posts.doc(postId);
+
+  return await FirebaseFirestore.instance.runTransaction((transaction) async {
+    DocumentSnapshot snapshot = await transaction.get(postRef);
+    if (!snapshot.exists) throw Exception("El post no existe");
+
+    List<dynamic> comments =
+        (snapshot.data() as Map<String, dynamic>)['comments'];
+
+    if (commentIndex >= comments.length || commentIndex < 0)
+      throw Exception("Índice de comentario inválido");
+
+    comments[commentIndex] = newComment;
+
+    transaction.update(postRef, {'comments': comments});
+  });
+}
+
+Future<void> deleteComment(String postId, int commentIndex) async {
+  DocumentReference postRef = posts.doc(postId);
+
+  return await FirebaseFirestore.instance.runTransaction((transaction) async {
+    DocumentSnapshot snapshot = await transaction.get(postRef);
+    if (!snapshot.exists) throw Exception("El post no existe");
+
+    List<dynamic> comments =
+        (snapshot.data() as Map<String, dynamic>)['comments'];
+
+    if (commentIndex >= comments.length || commentIndex < 0)
+      throw Exception("Índice de comentario inválido");
+
+    // Eliminamos el comentario
+    comments.removeAt(commentIndex);
+
+    transaction.update(postRef, {'comments': comments});
+  });
+}
+
+Future<void> deletePost(String uid) async {
+  await db.collection('people').doc(uid).delete();
 }

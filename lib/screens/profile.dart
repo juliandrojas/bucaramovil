@@ -32,6 +32,21 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  void _navigateToUserPosts(BuildContext context) {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      Navigator.pushNamed(
+        context,
+        '/user_posts',
+        arguments: {'userId': user.uid, 'userName': widget.nombre},
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo obtener el usuario')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final User? user = FirebaseAuth.instance.currentUser;
@@ -54,6 +69,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // Avatar
                   CircleAvatar(
                     backgroundColor: Colors.blue,
                     radius: 50,
@@ -65,8 +81,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 16),
+
+                  // Bienvenida
+                  const Text("Bienvenido", style: TextStyle(fontSize: 24)),
+                  const SizedBox(height: 5),
+
+                  // Nombre del usuario
                   Text(
-                    "Bienvenido: " + widget.nombre,
+                    widget.nombre,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -74,12 +96,48 @@ class _ProfilePageState extends State<ProfilePage> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    correo,
-                    style: const TextStyle(fontSize: 16, color: Colors.grey),
+
+                  // Etiqueta de correo
+                  const Text(
+                    "Correo",
+                    style: TextStyle(fontSize: 24),
                     textAlign: TextAlign.center,
                   ),
+                  const SizedBox(height: 8),
+
+                  // Correo del usuario
+                  Text(
+                    correo,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
                   const SizedBox(height: 24),
+
+                  // Botón: Ver mis publicaciones
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      _navigateToUserPosts(context);
+                    },
+                    icon: const Icon(Icons.list),
+                    label: const Text("Ver mis publicaciones"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      minimumSize: const Size(double.infinity, 0),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Botón: Cerrar sesión
                   ElevatedButton.icon(
                     onPressed: _isLoading ? null : _handleSignOut,
                     icon: _isLoading
