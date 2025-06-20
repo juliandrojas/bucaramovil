@@ -6,8 +6,9 @@ import 'package:flutter/material.dart';
 FirebaseFirestore db = FirebaseFirestore.instance;
 
 Future<void> createPost(
+  String author,
+  String userId,
   String description,
-  String? imageUrl,
   double latitude,
   double longitude,
   String severity,
@@ -19,9 +20,9 @@ Future<void> createPost(
     }
 
     await FirebaseFirestore.instance.collection('posts').add({
+      'author': user.displayName ?? 'Anónimo',
       'userId': user.uid,
       'description': description,
-      'imageUrl': imageUrl ?? '',
       'location': {'latitude': latitude, 'longitude': longitude},
       'severity': severity,
       'comments': [], // Inicialmente sin comentarios
@@ -33,27 +34,15 @@ Future<void> createPost(
   }
 }
 
-Future<List<Map<String, dynamic>>> getPosts() async {
-  List<Map<String, dynamic>> posts = [];
+Future<List> getPosts() async {
+  List posts = [];
   try {
-    CollectionReference collection = db.collection('ejemplo');
+    CollectionReference collection = db.collection('posts');
     QuerySnapshot queryPost = await collection.get();
-    for (var doc in queryPost.docs) {
-      final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-      // Agrega el UID del documento a los datos
-      final document = {
-        'nombre': data['nombre'] ?? '',
-        /*'createdAt': data['createdAt'] ?? '',
-        'description': data['description'] ?? '',
-        'imageUrl': data['imageUrl'] ?? '',
-        'location': data['location'] ?? {},
-        'severity': data['severity'] ?? '',
-        'comments': data['comments'] ?? [],
-        'userId': data['userId'] ?? '',*/
-        "uid": doc.id, // Usa el ID del documento como identificador
-      };
-      posts.add(document);
-    }
+
+    queryPost.docs.forEach((document) {
+      posts.add(document.data());
+    });
   } catch (e) {
     debugPrint("Error al obtener la colección: $e");
   }

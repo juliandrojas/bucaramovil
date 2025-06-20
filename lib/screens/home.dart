@@ -1,85 +1,153 @@
-import 'package:bucaramovil/screens/login.dart';
+import 'package:bucaramovil/controllers/db_firebase_dev.dart';
+import 'package:bucaramovil/controllers/utils/widgets/colors.dart';
+import 'package:bucaramovil/screens/components/layout.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class PostsHomePage extends StatelessWidget {
-  final User? user;
-  const PostsHomePage({required this.user, super.key});
+class HomePageDev extends StatelessWidget {
+  const HomePageDev({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return const Scaffold(body: Layout());
+  }
+}
+
+class StartPage extends StatelessWidget {
+  const StartPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Obtener el usuario actual
+    final User? user = FirebaseAuth.instance.currentUser;
+    // Obtener el correo y la foto del usuario
+    //final String correo = user?.email ?? 'Sin correo registrado';
+    final String photoUrl = user?.photoURL ?? '';
     return Scaffold(
-      body: Center(
-        child: Card(
-          elevation: 4,
-          margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Imagen del perfil
-                CircleAvatar(
-                  radius: 50,
-                  backgroundImage: user?.photoURL != null
-                      ? NetworkImage(user!.photoURL!)
-                      : const AssetImage('assets/default_profile.png')
-                            as ImageProvider,
-                ),
-                const SizedBox(height: 10),
-
-                // Nombre de usuario
-                Text(
-                  "Bienvenido: ${user?.displayName ?? 'No disponible'}",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+      /* floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/create_post');
+        },
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.add),
+      ), */
+      body: FutureBuilder(
+        future: getPosts(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(
+              child: Text('No hay publicaciones disponibles.'),
+            );
+          } else {
+            return ListView.builder(
+              itemCount: snapshot.data!.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  elevation: 6,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(color: Colors.grey.shade200),
                   ),
-                ),
-                const SizedBox(height: 10),
-                // Email
-                Text(
-                  "Email: ${user?.email ?? 'No disponible'}",
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 20),
-
-                // Botón para posts
-                ElevatedButton.icon(
-                  onPressed: () {
-                    if (ModalRoute.of(context)?.settings.name !=
-                        '/posts/home') {
-                      debugPrint("Navegando a la pantalla de posts");
-                      //debugPrint("Navegando al inicio de los test");
-                      Navigator.pushNamed(context, '/posts/home');
-                      // Navigator.pushNamed(context, '/test/home');
-                    }
-                  },
-                  icon: const Icon(Icons.article),
-                  label: const Text('Ver Posts'),
-                ),
-                const SizedBox(height: 15),
-
-                // Botón para cerrar sesión
-                ElevatedButton.icon(
-                  onPressed: () {
-                    FirebaseAuth.instance.signOut();
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => LoginPage()),
-                      (Route<dynamic> route) => false,
-                    );
-                  },
-                  icon: const Icon(Icons.logout),
-                  label: const Text('Cerrar Sesión'),
-                ),
-              ],
-            ),
-          ),
-        ),
+                  margin: const EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: 16,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Avatar del autor
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundImage: NetworkImage(photoUrl),
+                        ),
+                        const SizedBox(width: 12),
+                        // Contenido principal (nombre y descripción)
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Fila: Autor
+                              Row(
+                                children: [
+                                  const Text('Autor: '),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      user?.displayName ?? 'Anónimo',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              // Fila: Descripción
+                              Row(
+                                children: [
+                                  const Text('Descripción: '),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      snapshot.data![index]['description'] ??
+                                          'Sin descripción',
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              // Fila: Severidad
+                              Row(
+                                children: [
+                                  const Text('Severidad: '),
+                                  const SizedBox(width: 8),
+                                  SeverityDot(
+                                    severity:
+                                        snapshot.data![index]['severity'] ??
+                                        'gray',
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      snapshot.data![index]['severity'] ??
+                                          'Sin definir',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+        },
       ),
     );
+  }
+
+  // Función para formatear fechas
+  String formatDate(DateTime date) {
+    return DateFormat('dd \\de MMMM \\de yyyy, hh:mm:ss a').format(date);
   }
 }

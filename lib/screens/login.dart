@@ -1,89 +1,116 @@
-import 'package:bucaramovil/screens/components/navigation_bar.dart';
+import 'package:bucaramovil/controllers/auth.dart';
 import 'package:bucaramovil/screens/components/appbar_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class LoginPageDev extends StatelessWidget {
+  const LoginPageDev({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: CustomAppBar(title: 'Login - Entorno de Desarrollo'),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Card(
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: Colors.grey.withOpacity(0.3), width: 0.5),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              width: double.infinity,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.account_circle_rounded,
+                    size: 80,
+                    color: Colors.blue,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Bienvenido a BucaraMóvil',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  _GoogleSignInButton(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+// Separar el botón en su propio widget mejora la legibilidad y reutilización
+class _GoogleSignInButton extends StatefulWidget {
+  @override
+  __GoogleSignInButtonState createState() => __GoogleSignInButtonState();
+}
 
-  Future<void> signInWithGoogle() async {
+class __GoogleSignInButtonState extends State<_GoogleSignInButton> {
+  bool _isLoading = false;
+
+  Future<void> _handleSignIn() async {
+    setState(() => _isLoading = true);
+
     try {
-      // Iniciar el flujo de autenticación con Google
-      final GoogleSignIn googleSignIn = GoogleSignIn(
-        scopes: ['email', 'profile'],
-        forceCodeForRefreshToken:
-            true, // Asegura token refresh para mayor seguridad
-      );
+      final userCredential = await signInWithGoogle();
 
-      // Cerrar cualquier sesión previa para forzar login
-      await googleSignIn.signOut();
-
-      // Iniciar sesión con Google
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-
-      if (googleUser == null) {
-        debugPrint("Inicio de sesión cancelado");
-        return;
-      }
-
-      // Obtener credenciales
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      // Autenticar con Firebase
-      UserCredential userCredential = await _auth.signInWithCredential(
-        credential,
-      );
-
-      // Navegar solo si el widget sigue montado
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => NavigationBarHome(user: userCredential.user),
+      if (userCredential != null) {
+        // Inicio de sesión exitoso
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Bienvenido ${userCredential.user?.displayName}'),
           ),
+        );
+        // Aquí puedes navegar a otra pantalla
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        // Usuario canceló el login
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Inicio de sesión cancelado')),
         );
       }
     } catch (e) {
-      debugPrint("Error al iniciar sesión con Google: $e");
+      // Manejo de errores generales
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al iniciar sesión: $e')));
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CustomAppBar(title: "Login"),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Bienvenido a BucaraMóvil',
-              style: TextStyle(fontSize: 24),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                signInWithGoogle();
-                debugPrint('Iniciar sesión con Google');
-              },
-              child: const Text('Iniciar sesión con Google'),
-            ),
-          ],
-        ),
+    return ElevatedButton.icon(
+      onPressed: _isLoading ? null : _handleSignIn,
+      icon: _isLoading
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+          : const Icon(Icons.login),
+      label: Text(
+        _isLoading ? 'Iniciando sesión...' : 'Iniciar sesión con Google',
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        minimumSize: const Size(double.infinity, 0),
       ),
     );
   }

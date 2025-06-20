@@ -1,5 +1,4 @@
 import 'package:bucaramovil/controllers/map_controller.dart';
-import 'package:bucaramovil/screens/components/appbar_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +10,6 @@ class HomeMapPage extends StatelessWidget {
     return ChangeNotifierProvider<MapController>(
       create: (_) => MapController(),
       child: Scaffold(
-        appBar: CustomAppBar(title: "Mapa"),
         body: Consumer<MapController>(
           builder: (_, controller, _) => GoogleMap(
             markers: controller.markers, // Marcadores del controlador
@@ -22,7 +20,7 @@ class HomeMapPage extends StatelessWidget {
             compassEnabled: true, // Brújula
             zoomControlsEnabled: true, // Controles de zoom
             rotateGesturesEnabled: true, // Gestos de rotación
-            onTap: controller.onTap,
+            onTap: (position) => controller.onTap(position, context),
             onLongPress: (position) {
               // Aquí puedes manejar el evento de long press en el mapa
               debugPrint("Long Pressed at: $position");
