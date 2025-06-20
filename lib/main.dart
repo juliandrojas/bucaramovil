@@ -7,7 +7,7 @@ import 'environment.dart';
 // Importa los logins y homes de ambos entornos
 import 'screens/login.dart' as dev_login;
 import 'screens/home.dart' as dev_home;
-import 'screens/comments.dart' as dev_comments;
+import 'screens/posts/comments.dart' as dev_comments;
 /*import 'screens/test/login.dart' as test_login;
 import 'screens/test/home.dart' as test_home;*/
 
@@ -36,7 +36,9 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => const dev_login.LoginPageDev(),
         '/home': (context) => const dev_home.HomePageDev(),
-        '/comments': (context) => const dev_comments.CommentsScreen(),
+        '/comments': (context) => dev_comments.CommentsPage(
+          postId: ModalRoute.of(context)?.settings.arguments as String,
+        ),
       },
     );
   }

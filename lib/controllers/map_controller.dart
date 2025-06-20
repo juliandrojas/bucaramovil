@@ -10,9 +10,12 @@ class MapController extends ChangeNotifier {
     target: LatLng(7.1254, -73.1198), // Coordenadas de Bucaramanga
     zoom: 45, // Nivel de zoom inicial
   );
-  void onTap(LatLng position, BuildContext context) {
+  void onTap(
+    LatLng position,
+    //BuildContext context
+  ) {
     debugPrint("Tapped at: $position");
-    Navigator.pushNamed(context, '/post/test', arguments: position);
+    //Navigator.pushNamed(context, '/post/test', arguments: position);
   }
 
   /*void onTap(LatLng position) {

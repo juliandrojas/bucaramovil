@@ -1,5 +1,6 @@
 import 'package:bucaramovil/controllers/db_firebase_dev.dart';
 import 'package:bucaramovil/controllers/utils/widgets/colors.dart';
+
 import 'package:bucaramovil/screens/components/layout.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -130,6 +131,26 @@ class StartPage extends StatelessWidget {
                                     ),
                                   ),
                                 ],
+                              ),
+                              const SizedBox(height: 8),
+                              TextButton.icon(
+                                onPressed: () {
+                                  final postId = snapshot
+                                      .data![index]['uid']; // <-- Aquí obtienes el ID
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/comments',
+                                    arguments: postId,
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.comment_outlined,
+                                  size: 16,
+                                ),
+                                label: const Text("Ver comentarios"),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.blue,
+                                ),
                               ),
                             ],
                           ),

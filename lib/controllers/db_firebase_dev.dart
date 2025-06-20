@@ -34,14 +34,21 @@ Future<void> createPost(
   }
 }
 
-Future<List> getPosts() async {
-  List posts = [];
+Future<List<Map<String, dynamic>>> getPosts() async {
+  List<Map<String, dynamic>> posts = [];
   try {
-    CollectionReference collection = db.collection('posts');
+    CollectionReference collection = FirebaseFirestore.instance.collection(
+      'posts',
+    );
     QuerySnapshot queryPost = await collection.get();
 
     queryPost.docs.forEach((document) {
-      posts.add(document.data());
+      final data = document.data() as Map<String, dynamic>;
+      // Añadimos el ID del documento al mapa
+      posts.add({
+        ...data,
+        'uid': document.id, // <-- Aquí añadimos el ID del post
+      });
     });
   } catch (e) {
     debugPrint("Error al obtener la colección: $e");
