@@ -1,3 +1,4 @@
+import 'package:bucaramovil/screens/components/appbar_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:bucaramovil/controllers/db_firebase_dev.dart';
@@ -18,6 +19,10 @@ class _CreatePostPageState extends State<CreatePostPage> {
   final List<String> severities = ['low', 'medium', 'high'];
 
   Future<void> _submitPost(BuildContext context) async {
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final double? _latitude = args?['latitude'];
+    final double? _longitude = args?['longitude'];
     final description = _descriptionController.text.trim();
 
     // Valida que haya texto
@@ -28,17 +33,20 @@ class _CreatePostPageState extends State<CreatePostPage> {
       return;
     }
 
-    // Aquí puedes mejorar la ubicación dinámicamente si usas geolocalización
-    _latitude = 19.0; // ← Reemplaza esto con la lat real
-    _longitude = -99.0;
-
     try {
+      if (_latitude == null || _longitude == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se recibieron coordenadas válidas')),
+        );
+        return;
+      }
+
       await createPost(
         'Anónimo',
         FirebaseAuth.instance.currentUser?.uid ?? 'unknown',
         description,
-        _latitude,
-        _longitude,
+        _latitude!,
+        _longitude!,
         _severity,
       );
 
@@ -57,7 +65,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Crear Publicación")),
+      appBar: CustomAppBar(title: 'Crear Publicación'),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

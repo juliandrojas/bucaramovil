@@ -34,7 +34,7 @@ class _LayoutState extends State<Layout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'BucaraMóvil'),
+      appBar: CustomAppBar(title: 'BucaraMóvil Layout'),
       body: _paginas[_paginaActual],
       bottomNavigationBar: BottomNavigationBar(
         onTap: (index) {

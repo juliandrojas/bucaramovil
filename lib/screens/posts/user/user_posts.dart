@@ -142,8 +142,7 @@ class UserPostsPage extends StatelessWidget {
     final TextEditingController _controller = TextEditingController(
       text: postData['description'],
     );
-    final String? severity = postData['severity'];
-
+    //final String? severity = postData['severity'];
     showDialog(
       context: context,
       builder: (context) {

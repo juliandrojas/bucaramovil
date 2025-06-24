@@ -1,8 +1,18 @@
 import 'package:bucaramovil/controllers/db_firebase_dev.dart';
+import 'package:bucaramovil/screens/components/layout.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+class HomeLayout extends StatelessWidget {
+  const HomeLayout({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(body: Layout());
+  }
+}
 
 class StartPage extends StatelessWidget {
   const StartPage({super.key});
@@ -11,6 +21,10 @@ class StartPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final User? user = FirebaseAuth.instance.currentUser;
     return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text("Home de ${user?.displayName ?? 'Usuario'}"),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.pushNamed(context, '/create_post');
@@ -80,9 +94,9 @@ class StartPage extends StatelessWidget {
                                 backgroundColor: Colors.blue.withOpacity(0.7),
                                 radius: 20,
                                 child: Text(
-                                  post['userId'] != null &&
-                                          post['userId'].isNotEmpty
-                                      ? post['userId'][0].toUpperCase()
+                                  (post['author'] != null &&
+                                          post['author'].isNotEmpty)
+                                      ? post['author'][0].toUpperCase()
                                       : '?',
                                   style: const TextStyle(
                                     color: Colors.white,
