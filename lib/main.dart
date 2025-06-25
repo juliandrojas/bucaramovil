@@ -1,3 +1,5 @@
+import 'package:bucaramovil/screens/posts/location_post.dart';
+import 'package:bucaramovil/screens/posts/post_details.dart';
 import 'package:bucaramovil/screens/posts/user/user_posts.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -49,12 +51,10 @@ class MyApp extends StatelessWidget {
           );
         },
         '/comments': (context) {
-          // Extraer el postId del mapa de argumentos
           final args =
               ModalRoute.of(context)?.settings.arguments
                   as Map<String, dynamic>;
           final postID = args['postId'] as String;
-
           return CommentsPage(postId: postID);
         },
         '/create_comment': (context) {
@@ -65,6 +65,22 @@ class MyApp extends StatelessWidget {
           final postID = args['postId'] as String;
 
           return CreateCommentPage(postId: postID);
+        },
+        '/post_details': (context) {
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>;
+          return PostDetailsPage(post: args);
+        },
+        '/location_posts': (context) {
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as Map<String, dynamic>;
+          return LocationPostsPage(
+            latitude: args['latitude'],
+            longitude: args['longitude'],
+            posts: args['posts'],
+          );
         },
       },
     );

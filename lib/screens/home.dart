@@ -25,13 +25,13 @@ class StartPage extends StatelessWidget {
         centerTitle: true,
         title: Text("Home de ${user?.displayName ?? 'Usuario'}"),
       ),
-      floatingActionButton: FloatingActionButton(
+      /* floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.pushNamed(context, '/create_post');
         },
         backgroundColor: Colors.blue,
         child: const Icon(Icons.add),
-      ),
+      ), */
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: getPosts(),
         builder: (context, snapshot) {
@@ -134,34 +134,6 @@ class StartPage extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 12),
-                          // Imagen del post
-                          if (post['imageUrl'] != null &&
-                              post['imageUrl'].isNotEmpty)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                post['imageUrl'],
-                                height: 200,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(
-                                    Icons.image_not_supported_outlined,
-                                    size: 48,
-                                    color: Colors.grey,
-                                  );
-                                },
-                              ),
-                            )
-                          else
-                            const Center(
-                              child: Icon(
-                                Icons.image_not_supported_outlined,
-                                size: 48,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          const SizedBox(height: 12),
                           // Descripción del post
                           Text(
                             post['description'] ?? 'Sin descripción',
@@ -183,7 +155,8 @@ class StartPage extends StatelessWidget {
                                 post['location'] != null &&
                                         post['location']['latitude'] != null &&
                                         post['location']['longitude'] != null
-                                    ? 'Latitud: ${post['location']['latitude']}, Longitud: ${post['location']['longitude']}'
+                                    ? 'Lat: ${post['location']['latitude'].toStringAsFixed(4)}, '
+                                          'Lng: ${post['location']['longitude'].toStringAsFixed(4)}'
                                     : 'Sin ubicación',
                                 style: const TextStyle(
                                   fontSize: 14,
@@ -220,7 +193,9 @@ class StartPage extends StatelessWidget {
                                 Navigator.pushNamed(
                                   context,
                                   '/comments',
-                                  arguments: post,
+                                  arguments: {
+                                    'postId': post['uid'],
+                                  }, // <-- Así está bien
                                 );
                               },
                               icon: const Icon(

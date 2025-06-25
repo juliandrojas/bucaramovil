@@ -1,1 +1,11 @@
-flutter build apk
+Construir APK
+flutter build apk 
+Desactivar tree-shaking con esta bandera
+flutter build apk --no-tree-shake-icons
+Ruta
+<tu_carpeta_proyecto>/build/app/outputs/flutter-apk/
+Dentro de esta carpeta encontrarás:
+
+app-release.apk → Tu app lista para producción.
+app-debug.apk → Solo existe si haces un build en modo debug (flutter build apk --debug).
+app-profile.apk → Si haces un build en modo profile (flutter build apk --profile).

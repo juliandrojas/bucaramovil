@@ -1,6 +1,7 @@
 import 'package:bucaramovil/controllers/db_firebase_dev.dart';
 import 'package:bucaramovil/screens/components/appbar_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CreateCommentPage extends StatefulWidget {
   final String postId;
@@ -16,7 +17,21 @@ class _CreateCommentPageState extends State<CreateCommentPage> {
 
   Future<void> _addComment(String comment) async {
     try {
-      addCommentToPost(widget.postId, comment);
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('Debes iniciar sesión para comentar');
+      }
+
+      // Estructura recomendada para comentarios (ver structure_data.txt)
+      final commentData = {
+        'userId': user.uid,
+        'userName': user.displayName ?? 'Anónimo',
+        'commentText': comment,
+        'timestamp': DateTime.now(),
+      };
+
+      await addCommentToPost(widget.postId, commentData);
+
       Navigator.pop(context); // Volver a CommentsPage
     } catch (e) {
       ScaffoldMessenger.of(
@@ -36,7 +51,7 @@ class _CreateCommentPageState extends State<CreateCommentPage> {
             TextField(
               controller: _controller,
               maxLines: 3,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Escribe tu comentario',
                 border: OutlineInputBorder(),
               ),
@@ -63,5 +78,11 @@ class _CreateCommentPageState extends State<CreateCommentPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 }

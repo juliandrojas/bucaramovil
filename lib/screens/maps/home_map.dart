@@ -8,7 +8,11 @@ class HomeMapPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<MapController>(
-      create: (_) => MapController(),
+      create: (_) {
+        final controller = MapController();
+        controller.cargarMarcadoresDesdeFirestore(context);
+        return controller;
+      },
       child: Scaffold(
         body: Consumer<MapController>(
           builder: (_, controller, _) => GoogleMap(

@@ -1,7 +1,9 @@
+import 'package:bucaramovil/screens/components/appbar_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:bucaramovil/controllers/db_firebase_dev.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class CommentsPage extends StatelessWidget {
   final String postId;
@@ -13,46 +15,8 @@ class CommentsPage extends StatelessWidget {
     final User? currentUser = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Comentarios')),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('posts')
-            .doc(postId)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(child: Text('No hay comentarios.'));
-          }
-
-          final data = snapshot.data!.data() as Map<String, dynamic>;
-          final String authorId = data['userId'] ?? '';
-          final bool isAuthor = currentUser?.uid == authorId;
-
-          List<dynamic> commentsDynamic = data['comments'] ?? [];
-          List<String> comments = commentsDynamic
-              .map((item) => item.toString())
-              .toList();
-
-          return ListView.builder(
-            itemCount: comments.length,
-            itemBuilder: (context, index) {
-              String comment = comments[index];
-
-              return ListTile(
-                title: Text(comment),
-                subtitle: Text('Comentario #${index + 1}'),
-                onTap: () {
-                  _showCommentActions(context, index, comment, isAuthor);
-                },
-              );
-            },
-          );
-        },
-      ),
+      appBar: CustomAppBar(title: 'Comentarios'),
+      body: _buildCommentsBody(context, currentUser),
       floatingActionButton: _buildAddCommentButton(
         context,
         postId,
@@ -61,7 +25,50 @@ class CommentsPage extends StatelessWidget {
     );
   }
 
-  // Botón para agregar comentarios (solo visible si es el autor)
+  Widget _buildCommentsBody(BuildContext context, User? currentUser) {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('posts')
+          .doc(postId)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const Center(child: Text('No hay comentarios.'));
+        }
+
+        final data = snapshot.data!.data() as Map<String, dynamic>;
+        final String authorId = data['userId'] ?? '';
+        final bool isAuthor = currentUser?.uid == authorId;
+
+        List<dynamic> commentsDynamic = data['comments'] ?? [];
+        if (commentsDynamic.isEmpty) {
+          return const Center(child: Text('No hay comentarios.'));
+        }
+        return ListView.builder(
+          itemCount: commentsDynamic.length,
+          itemBuilder: (context, index) {
+            final comment = commentsDynamic[index];
+            return ListTile(
+              title: Text(comment['commentText'] ?? ''),
+              subtitle: Text(comment['userName'] ?? ''),
+              trailing: comment['timestamp'] != null
+                  ? Text(
+                      DateFormat(
+                        'dd/MM/yyyy HH:mm',
+                      ).format((comment['timestamp'] as Timestamp).toDate()),
+                    )
+                  : null,
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildAddCommentButton(
     BuildContext context,
     String postId,
@@ -84,7 +91,7 @@ class CommentsPage extends StatelessWidget {
               Navigator.pushNamed(
                 context,
                 '/create_comment',
-                arguments: postId,
+                arguments: {'postId': postId}, // <-- Así debe ser
               );
             },
             backgroundColor: Colors.blue,
@@ -103,7 +110,6 @@ class CommentsPage extends StatelessWidget {
     return snapshot.data() as Map<String, dynamic>;
   }
 
-  // Mostrar diálogo con opciones al pulsar un comentario
   void _showCommentActions(
     BuildContext context,
     int index,
@@ -111,81 +117,90 @@ class CommentsPage extends StatelessWidget {
     bool isAuthor,
   ) {
     if (isAuthor) {
-      // Si es el autor del post, mostrar editar y eliminar
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text("Opciones del comentario"),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(comment),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context); // Cerrar diálogo
-                          _showEditDialog(context, index, comment);
-                        },
-                        icon: const Icon(Icons.edit),
-                        label: const Text("Editar"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context); // Cerrar diálogo
-                          _showDeleteDialog(context, index, comment);
-                        },
-                        icon: const Icon(Icons.delete),
-                        label: const Text("Eliminar"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: Navigator.of(context).pop,
-                child: const Text("Cerrar"),
-              ),
-            ],
-          );
-        },
-      );
+      _showAuthorActionsDialog(context, index, comment);
     } else {
-      // Si no es el autor, solo mostrar el comentario
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text("Comentario"),
-            content: Text(comment),
-            actions: [
-              TextButton(
-                onPressed: Navigator.of(context).pop,
-                child: const Text("Cerrar"),
-              ),
-            ],
-          );
-        },
-      );
+      _showViewCommentDialog(context, comment);
     }
   }
 
-  // Diálogo para editar comentario
+  void _showAuthorActionsDialog(
+    BuildContext context,
+    int index,
+    String comment,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Opciones del comentario"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(comment),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _showEditDialog(context, index, comment);
+                      },
+                      icon: const Icon(Icons.edit),
+                      label: const Text("Editar"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _showDeleteDialog(context, index, comment);
+                      },
+                      icon: const Icon(Icons.delete),
+                      label: const Text("Eliminar"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: Navigator.of(context).pop,
+              child: const Text("Cerrar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showViewCommentDialog(BuildContext context, String comment) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Comentario"),
+          content: Text(comment),
+          actions: [
+            TextButton(
+              onPressed: Navigator.of(context).pop,
+              child: const Text("Cerrar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showEditDialog(BuildContext context, int index, String oldComment) {
     final TextEditingController _controller = TextEditingController(
       text: oldComment,
@@ -200,7 +215,7 @@ class CommentsPage extends StatelessWidget {
             controller: _controller,
             maxLines: 3,
             autofocus: true,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'Escribe tu nuevo comentario',
               border: OutlineInputBorder(),
             ),
@@ -216,7 +231,7 @@ class CommentsPage extends StatelessWidget {
                 if (newComment.isNotEmpty && newComment != oldComment) {
                   updateComment(postId, index, newComment)
                       .then((_) {
-                        Navigator.pop(context); // Cerrar diálogo
+                        Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Comentario actualizado'),
@@ -242,7 +257,6 @@ class CommentsPage extends StatelessWidget {
     );
   }
 
-  // Diálogo para eliminar comentario
   void _showDeleteDialog(BuildContext context, int index, String comment) {
     showDialog(
       context: context,
@@ -261,7 +275,7 @@ class CommentsPage extends StatelessWidget {
               onPressed: () {
                 deleteComment(postId, index)
                     .then((_) {
-                      Navigator.pop(context); // Cierra el diálogo
+                      Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Comentario eliminado')),
                       );

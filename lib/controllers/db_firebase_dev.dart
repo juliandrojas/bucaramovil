@@ -77,7 +77,10 @@ Future<List<String>> getPostComments(String postId) async {
 }
 
 /// Añade un comentario al post especificado
-Future<void> addCommentToPost(String postId, String comment) async {
+Future<void> addCommentToPost(
+  String postId,
+  Map<String, dynamic> comment,
+) async {
   try {
     await FirebaseFirestore.instance.collection('posts').doc(postId).update({
       'comments': FieldValue.arrayUnion([comment]),

@@ -11,6 +11,20 @@ class MapController extends ChangeNotifier {
     zoom: 15,
   );
 
+  List<Map<String, dynamic>> serializarPosts(List<Map<String, dynamic>> posts) {
+    return posts.map((post) {
+      final newPost = Map<String, dynamic>.from(post);
+      // Convierte Timestamp a String si existe
+      if (newPost['createdAt'] != null && newPost['createdAt'] is Timestamp) {
+        newPost['createdAt'] = (newPost['createdAt'] as Timestamp)
+            .toDate()
+            .toIso8601String();
+      }
+      // Si tienes otros campos tipo Timestamp, conviértelos aquí también
+      return newPost;
+    }).toList();
+  }
+
   void onMarkerTapped(
     BuildContext context,
     LatLng position,
@@ -26,17 +40,34 @@ class MapController extends ChangeNotifier {
               ListTile(
                 leading: const Icon(Icons.visibility),
                 title: const Text('Ver post'),
-                enabled: post != null,
-                onTap: post != null
-                    ? () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(
-                          context,
-                          '/comments',
-                          arguments: {'postId': post['uid']},
-                        );
-                      }
-                    : null,
+                onTap: () async {
+                  Navigator.pop(context);
+                  // Busca todos los posts de esa ubicación
+                  final posts = await buscarPostsPorUbicacion(
+                    position.latitude,
+                    position.longitude,
+                  );
+                  if (posts.isNotEmpty) {
+                    final serializados = serializarPosts(posts);
+                    Navigator.pushNamed(
+                      context,
+                      '/location_posts',
+                      arguments: {
+                        'latitude': position.latitude,
+                        'longitude': position.longitude,
+                        'posts': serializados,
+                      },
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'No hay publicaciones en esta ubicación.',
+                        ),
+                      ),
+                    );
+                  }
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.add),
@@ -63,20 +94,28 @@ class MapController extends ChangeNotifier {
   void onTap(LatLng position, BuildContext context) async {
     debugPrint("Tapped at: $position");
 
-    // Busca si ya existe un post en esa ubicación
+    // Si el usuario crea un post, espera a que termine y recarga los marcadores
     final post = await buscarPostPorUbicacion(position);
 
-    final markerId = MarkerId(position.toString());
-    final marker = Marker(
-      markerId: markerId,
-      position: position,
-      onTap: () => onMarkerTapped(context, position, post),
-    );
-    _markers[markerId] = marker;
-    notifyListeners();
+    if (post == null) {
+      // Navega a crear post y espera a que regrese
+      await Navigator.pushNamed(
+        context,
+        '/create_post',
+        arguments: {
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+        },
+      );
+      // Recarga los marcadores desde Firestore
+      await cargarMarcadoresDesdeFirestore(context);
+    }
 
-    // Abre el modal automáticamente después de agregar el marcador
-    onMarkerTapped(context, position, post);
+    // Busca el post actualizado después de recargar
+    final updatedPost = await buscarPostPorUbicacion(position);
+
+    // Abre el modal con el post actualizado (si existe)
+    onMarkerTapped(context, position, updatedPost);
   }
 
   Future<Map<String, dynamic>?> buscarPostPorUbicacion(
@@ -94,5 +133,44 @@ class MapController extends ChangeNotifier {
       }
     }
     return null;
+  }
+
+  Future<void> cargarMarcadoresDesdeFirestore(BuildContext context) async {
+    final snapshot = await FirebaseFirestore.instance.collection('posts').get();
+    _markers.clear();
+    for (var doc in snapshot.docs) {
+      final data = doc.data();
+      final loc = data['location'];
+      if (loc != null) {
+        final position = LatLng(loc['latitude'], loc['longitude']);
+        final markerId = MarkerId(doc.id);
+        final post = {...data, 'uid': doc.id};
+        _markers[markerId] = Marker(
+          markerId: markerId,
+          position: position,
+          onTap: () => onMarkerTapped(context, position, post),
+        );
+      }
+    }
+    notifyListeners();
+  }
+
+  Future<List<Map<String, dynamic>>> buscarPostsPorUbicacion(
+    double latitude,
+    double longitude, {
+    double tolerancia = 0.0005,
+  }) async {
+    final snapshot = await FirebaseFirestore.instance.collection('posts').get();
+    List<Map<String, dynamic>> posts = [];
+    for (var doc in snapshot.docs) {
+      final data = doc.data();
+      final loc = data['location'];
+      if (loc != null &&
+          (loc['latitude'] - latitude).abs() < tolerancia &&
+          (loc['longitude'] - longitude).abs() < tolerancia) {
+        posts.add({...data, 'uid': doc.id});
+      }
+    }
+    return posts;
   }
 }

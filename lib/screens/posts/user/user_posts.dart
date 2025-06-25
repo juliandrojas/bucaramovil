@@ -1,3 +1,4 @@
+import 'package:bucaramovil/screens/components/appbar_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -15,7 +16,8 @@ class UserPostsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Publicaciones de $userName")),
+      appBar: CustomAppBar(title: "Mis Publicaciones"),
+      //appBar: AppBar(title: Text("Publicaciones de $userName")),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('posts')
