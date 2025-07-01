@@ -136,115 +136,8 @@ class MapController extends ChangeNotifier {
     );
   }
 
-  /*void onMarkerTapped(
-    BuildContext context,
-    LatLng position,
-    Map<String, dynamic>? post,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.visibility),
-                title: const Text('Ver post'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  try {
-                    final posts = await buscarPostsPorUbicacion(
-                      position.latitude,
-                      position.longitude,
-                    );
-                    if (posts.isNotEmpty) {
-                      final serializados = serializarPosts(posts);
-                      Navigator.pushNamed(
-                        context,
-                        '/location_posts',
-                        arguments: {
-                          'latitude': position.latitude,
-                          'longitude': position.longitude,
-                          'posts': serializados,
-                        },
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'No hay publicaciones en esta ubicación.',
-                          ),
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error al cargar posts: $e')),
-                    );
-                  }
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.add),
-                title: const Text('Crear uno nuevo'),
-                onTap: () {
-                  Navigator.pop(context);
-                  try {
-                    Navigator.pushNamed(
-                      context,
-                      '/create_post',
-                      arguments: {
-                        'latitude': position.latitude,
-                        'longitude': position.longitude,
-                      },
-                    );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error al navegar: $e')),
-                    );
-                  }
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }*/
-
   void onTap(LatLng position, BuildContext context, post) async {
     debugPrint("Tapped at: $position, navegando a comentarios...");
-    /*Navigator.pushNamed(
-      context,
-      '/comments',
-      arguments: {'postId': post['uid']},
-    );*/
-
-    /*
-    // Si el usuario crea un post, espera a que termine y recarga los marcadores
-    final post = await buscarPostPorUbicacion(position);
-
-    if (post == null) {
-      // Navega a crear post y espera a que regrese
-      await Navigator.pushNamed(
-        context,
-        '/create_post',
-        arguments: {
-          'latitude': position.latitude,
-          'longitude': position.longitude,
-        },
-      );
-      // Recarga los marcadores desde Firestore
-      await cargarMarcadoresDesdeFirestore(context);
-    }
-
-    // Busca el post actualizado después de recargar
-    final updatedPost = await buscarPostPorUbicacion(position);
-
-    // Abre el modal con el post actualizado (si existe)
-    onMarkerTapped(context, position, updatedPost);
-*/
   }
 
   Future<Map<String, dynamic>?> buscarPostPorUbicacion(
@@ -273,7 +166,7 @@ class MapController extends ChangeNotifier {
       if (loc != null) {
         final position = LatLng(loc['latitude'], loc['longitude']);
         final markerId = MarkerId(doc.id);
-        final post = {...data, 'uid': doc.id};
+        //final post = {...data, 'uid': doc.id};
         _markers[markerId] = Marker(
           markerId: markerId,
           position: position,
