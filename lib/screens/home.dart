@@ -25,13 +25,6 @@ class StartPage extends StatelessWidget {
         centerTitle: true,
         title: Text("Home de ${user?.displayName ?? 'Usuario'}"),
       ),
-      /* floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/create_post');
-        },
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.add),
-      ), */
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: getPosts(),
         builder: (context, snapshot) {

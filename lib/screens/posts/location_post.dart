@@ -1,7 +1,6 @@
 import 'package:bucaramovil/controllers/db_firebase_dev.dart';
 import 'package:bucaramovil/screens/components/appbar_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:bucaramovil/screens/components/post_card.dart';
 
 class LocationPostsPage extends StatelessWidget {
   final double latitude;

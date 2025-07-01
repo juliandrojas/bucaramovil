@@ -125,8 +125,8 @@ class UserPostsPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                onTap: () => _showEditPostDialog(context, data, document.id),
-                onLongPress: () => _showDeletePostDialog(context, document.id),
+                //onTap: () => _showEditPostDialog(context, data, document.id),
+                //onLongPress: () => _showDeletePostDialog(context, document.id),
               );
             },
           );
@@ -134,7 +134,8 @@ class UserPostsPage extends StatelessWidget {
       ),
     );
   }
-
+}
+/* 
   // Diálogo para editar el post
   void _showEditPostDialog(
     BuildContext context,
@@ -253,3 +254,4 @@ class UserPostsPage extends StatelessWidget {
     }
   }
 }
+ */
