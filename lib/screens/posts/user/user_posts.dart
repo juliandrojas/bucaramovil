@@ -141,7 +141,7 @@ class UserPostsPage extends StatelessWidget {
     Map<String, dynamic> postData,
     String postId,
   ) {
-    final TextEditingController _controller = TextEditingController(
+    final TextEditingController controller = TextEditingController(
       text: postData['description'],
     );
     //final String? severity = postData['severity'];
@@ -151,7 +151,7 @@ class UserPostsPage extends StatelessWidget {
         return AlertDialog(
           title: const Text("Editar Publicación"),
           content: TextField(
-            controller: _controller,
+            controller: controller,
             maxLines: 4,
             autofocus: true,
             decoration: const InputDecoration(
@@ -166,7 +166,7 @@ class UserPostsPage extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                final newDescription = _controller.text.trim();
+                final newDescription = controller.text.trim();
                 if (newDescription.isNotEmpty &&
                     newDescription != postData['description']) {
                   _updatePostDescription(context, postId, newDescription);

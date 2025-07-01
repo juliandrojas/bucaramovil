@@ -12,17 +12,14 @@ class CreatePostPage extends StatefulWidget {
 
 class _CreatePostPageState extends State<CreatePostPage> {
   final TextEditingController _descriptionController = TextEditingController();
-  late double _latitude;
-  late double _longitude;
-  String _severity = "low"; // Puedes cambiar por valores reales más adelante
-
+  String severity = "low"; // Puedes cambiar por valores reales más adelante
   final List<String> severities = ['low', 'medium', 'high'];
 
   Future<void> _submitPost(BuildContext context) async {
     final args =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    final double? _latitude = args?['latitude'];
-    final double? _longitude = args?['longitude'];
+    final double? latitude = args?['latitude'];
+    final double? longitude = args?['longitude'];
     final description = _descriptionController.text.trim();
 
     // Valida que haya texto
@@ -34,7 +31,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
     }
 
     try {
-      if (_latitude == null || _longitude == null) {
+      if (latitude == null || longitude == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('No se recibieron coordenadas válidas')),
         );
@@ -45,9 +42,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
         'Anónimo',
         FirebaseAuth.instance.currentUser?.uid ?? 'unknown',
         description,
-        _latitude!,
-        _longitude!,
-        _severity,
+        latitude,
+        longitude,
+        severity,
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -93,7 +90,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
             const Text("Gravedad del problema"),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: _severity,
+              value: severity,
               items: severities.map((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
@@ -103,7 +100,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
               onChanged: (String? newValue) {
                 if (newValue != null) {
                   setState(() {
-                    _severity = newValue;
+                    severity = newValue;
                   });
                 }
               },

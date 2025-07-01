@@ -76,6 +76,28 @@ Future<List<String>> getPostComments(String postId) async {
   }
 }
 
+Future<List<Map<String, dynamic>>> getPostsForLatLong() async {
+  List<Map<String, dynamic>> posts = [];
+  try {
+    QuerySnapshot queryPost = await FirebaseFirestore.instance
+        .collection('posts')
+        .get();
+
+    for (var document in queryPost.docs) {
+      final data = document.data() as Map<String, dynamic>;
+      if (data.containsKey('location') &&
+          data['location'] is Map<String, dynamic> &&
+          data['location'].containsKey('latitude') &&
+          data['location'].containsKey('longitude')) {
+        posts.add({...data, 'uid': document.id});
+      }
+    }
+  } catch (e) {
+    debugPrint("Error al obtener los posts por ubicación: $e");
+  }
+  return posts;
+}
+
 /// Añade un comentario al post especificado
 Future<void> addCommentToPost(
   String postId,
@@ -104,8 +126,9 @@ Future<void> updateComment(
     List<dynamic> comments =
         (snapshot.data() as Map<String, dynamic>)['comments'];
 
-    if (commentIndex >= comments.length || commentIndex < 0)
+    if (commentIndex >= comments.length || commentIndex < 0) {
       throw Exception("Índice de comentario inválido");
+    }
 
     comments[commentIndex] = newComment;
 
@@ -123,8 +146,9 @@ Future<void> deleteComment(String postId, int commentIndex) async {
     List<dynamic> comments =
         (snapshot.data() as Map<String, dynamic>)['comments'];
 
-    if (commentIndex >= comments.length || commentIndex < 0)
+    if (commentIndex >= comments.length || commentIndex < 0) {
       throw Exception("Índice de comentario inválido");
+    }
 
     // Eliminamos el comentario
     comments.removeAt(commentIndex);

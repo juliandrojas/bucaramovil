@@ -8,7 +8,7 @@ class LoginPageDev extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Login - Entorno de Desarrollo'),
+      appBar: CustomAppBar(title: 'Login'),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),

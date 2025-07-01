@@ -24,7 +24,7 @@ class HomeMapPage extends StatelessWidget {
             compassEnabled: true, // Brújula
             zoomControlsEnabled: true, // Controles de zoom
             rotateGesturesEnabled: true, // Gestos de rotación
-            onTap: (position) => controller.onTap(position, context),
+            onTap: (position) => controller.onTapTest(position, context),
             //onTap: (position) => controller.onTap(position, context),
             onLongPress: (position) {
               // Aquí puedes manejar el evento de long press en el mapa
