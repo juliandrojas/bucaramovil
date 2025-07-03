@@ -125,8 +125,8 @@ class UserPostsPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                //onTap: () => _showEditPostDialog(context, data, document.id),
-                //onLongPress: () => _showDeletePostDialog(context, document.id),
+                onTap: () => _showEditPostDialog(context, data, document.id),
+                onLongPress: () => _showDeletePostDialog(context, document.id),
               );
             },
           );
@@ -135,123 +135,108 @@ class UserPostsPage extends StatelessWidget {
     );
   }
 }
-/* 
-  // Diálogo para editar el post
-  void _showEditPostDialog(
-    BuildContext context,
-    Map<String, dynamic> postData,
-    String postId,
-  ) {
-    final TextEditingController controller = TextEditingController(
-      text: postData['description'],
-    );
-    //final String? severity = postData['severity'];
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Editar Publicación"),
-          content: TextField(
-            controller: controller,
-            maxLines: 4,
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: 'Escribe tu nueva descripción',
-              border: OutlineInputBorder(),
-            ),
+
+void _showEditPostDialog(
+  BuildContext context,
+  Map<String, dynamic> postData,
+  String postId,
+) {
+  final TextEditingController controller = TextEditingController(
+    text: postData['description'],
+  );
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text("Editar Publicación"),
+        content: TextField(
+          controller: controller,
+          maxLines: 4,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Escribe tu nueva descripción',
+            border: OutlineInputBorder(),
           ),
-          actions: [
-            TextButton(
-              onPressed: Navigator.of(context).pop,
-              child: const Text("Cancelar"),
-            ),
-            TextButton(
-              onPressed: () {
-                final newDescription = controller.text.trim();
-                if (newDescription.isNotEmpty &&
-                    newDescription != postData['description']) {
-                  _updatePostDescription(context, postId, newDescription);
-                  Navigator.pop(context); // Cerrar diálogo
-                } else {
-                  Navigator.pop(context); // Cerrar sin hacer nada
-                }
-              },
-              child: const Text("Guardar"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // Función para actualizar la descripción del post
-  Future<void> _updatePostDescription(
-    BuildContext context,
-    String postId,
-    String newDescription,
-  ) async {
-    try {
-      await FirebaseFirestore.instance.collection('posts').doc(postId).update({
-        'description': newDescription,
-      });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Descripción actualizada')));
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error al actualizar: $e')));
-    }
-  }
-
-  // Diálogo para eliminar el post
-  void _showDeletePostDialog(BuildContext context, String postId) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Eliminar Publicación"),
-          content: const Text(
-            "¿Estás seguro de querer eliminar esta publicación?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("Cancelar"),
           ),
-          actions: [
-            TextButton(
-              onPressed: Navigator.of(context).pop,
-              child: const Text("Cancelar"),
-            ),
-            TextButton(
-              onPressed: () {
-                _deletePost(postId)
-                    .then((_) {
-                      Navigator.pop(context); // Cerrar diálogo
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Publicación eliminada')),
-                      );
-                    })
-                    .catchError((error) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error al eliminar: $error')),
-                      );
-                    });
-              },
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text("Eliminar"),
-            ),
-          ],
-        );
-      },
-    );
-  }
+          TextButton(
+            onPressed: () async {
+              final newDescription = controller.text.trim();
+              if (newDescription.isNotEmpty &&
+                  newDescription != postData['description']) {
+                await _updatePostDescription(context, postId, newDescription);
+                Navigator.pop(context); // Cerrar diálogo
+              } else {
+                Navigator.pop(context); // Cerrar sin hacer nada
+              }
+            },
+            child: const Text("Guardar"),
+          ),
+        ],
+      );
+    },
+  );
+}
 
-  // Función para eliminar el post
-  Future<void> _deletePost(String postId) async {
-    try {
-      await FirebaseFirestore.instance.collection('posts').doc(postId).delete();
-    } catch (e) {
-      debugPrint("Error al eliminar el post: $e");
-      rethrow;
-    }
+Future<void> _updatePostDescription(
+  BuildContext context,
+  String postId,
+  String newDescription,
+) async {
+  try {
+    await FirebaseFirestore.instance.collection('posts').doc(postId).update({
+      'description': newDescription,
+    });
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Descripción actualizada')));
+  } catch (e) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Error al actualizar: $e')));
   }
 }
- */
+
+void _showDeletePostDialog(BuildContext context, String postId) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text("Eliminar Publicación"),
+        content: const Text(
+          "¿Estás seguro de querer eliminar esta publicación?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("Cancelar"),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _deletePost(postId);
+              Navigator.pop(context); // Cerrar diálogo
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Publicación eliminada')),
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text("Eliminar"),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Future<void> _deletePost(String postId) async {
+  try {
+    await FirebaseFirestore.instance.collection('posts').doc(postId).delete();
+  } catch (e) {
+    debugPrint("Error al eliminar el post: $e");
+    rethrow;
+  }
+}
